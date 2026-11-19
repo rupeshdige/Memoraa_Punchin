@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Salary Slips • Memoraa{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-cash-stack me-2"></i>My Salary Slips</div>
+            <div class="card-body">
+                <div class="mb-4 p-3 rounded" style="background:rgba(255,215,0,0.08);border:1px solid #333;">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-secondary">Your Monthly Base Salary</span>
+                        <span class="gold-text fs-4 fw-bold">₹ {{ '{:,.0f}'.format(salary) }}</span>
+                    </div>
+                    <small class="text-secondary">Salary is calculated based on days with complete Punch In + Punch Out (excluding Sundays & Holidays).</small>
+                </div>
+
+                <h6 class="mb-3">Download Salary Slip (PDF)</h6>
+                <div class="list-group">
+                    {% for m in months %}
+                    <a href="{{ url_for('salary_slip', month=m) }}" class="list-group-item list-group-item-action bg-dark text-light border-secondary d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-file-earmark-pdf gold-text me-2"></i>{{ m }}</span>
+                        <span class="btn btn-sm btn-outline-gold">Download PDF</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

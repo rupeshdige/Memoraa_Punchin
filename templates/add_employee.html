@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Add Employee • Memoraa{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-person-plus me-2"></i>Create New Employee</div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Employee ID *</label>
+                            <input type="text" name="emp_id" class="form-control" required placeholder="e.g. EMP001">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Mobile Number *</label>
+                            <input type="text" name="mobile" class="form-control" required placeholder="10-digit mobile">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Password *</label>
+                            <input type="text" name="password" class="form-control" required placeholder="Set initial password">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Role</label>
+                            <select name="role" class="form-select">
+                                <option value="employee">Employee</option>
+                                <option value="manager">Manager</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Assign Manager</label>
+                            <select name="manager_id" class="form-select">
+                                <option value="">-- None --</option>
+                                {% for m in managers %}
+                                <option value="{{ m.id }}">{{ m.name }} ({{ m.emp_id }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Monthly Salary (₹)</label>
+                            <input type="number" name="monthly_salary" class="form-control" step="0.01" min="0" value="0">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-gold w-100">Create Employee</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

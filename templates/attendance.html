@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}My Attendance • Memoraa{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="brand-font gold-text mb-0"><i class="bi bi-calendar-check me-2"></i>My Attendance</h3>
+    <form method="GET" class="d-flex gap-2">
+        <input type="month" name="month" class="form-control form-control-sm" value="{{ month }}" onchange="this.form.submit()">
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Punch In</th>
+                        <th>Punch Out</th>
+                        <th>Hours</th>
+                        <th>Location (In)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in records %}
+                    <tr>
+                        <td>{{ a.date.strftime('%d %b %Y') }} <small class="text-secondary">({{ a.date.strftime('%a') }})</small></td>
+                        <td>{{ a.punch_in_time.strftime('%H:%M:%S') if a.punch_in_time else '-' }}</td>
+                        <td>{{ a.punch_out_time.strftime('%H:%M:%S') if a.punch_out_time else '-' }}</td>
+                        <td>{{ a.working_hours() if a.working_hours() else '-' }}</td>
+                        <td class="small">
+                            {% if a.punch_in_lat %}
+                            {{ '%.4f'|format(a.punch_in_lat) }}, {{ '%.4f'|format(a.punch_in_lng) }}
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>
+                            {% if a.status == 'regularized' %}
+                                <span class="badge bg-info">Regularized</span>
+                            {% elif a.is_present() %}
+                                <span class="badge bg-success">Present</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Incomplete</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-center text-secondary py-4">No attendance records for this month.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

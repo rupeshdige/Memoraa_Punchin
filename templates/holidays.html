@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Holidays • Memoraa{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="brand-font gold-text mb-0"><i class="bi bi-balloon me-2"></i>Company Holidays</h3>
+    {% if current_user.is_manager() %}
+    <a href="{{ url_for('add_holiday') }}" class="btn btn-gold btn-sm"><i class="bi bi-plus-lg me-1"></i>Add Holiday</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Added By</th>
+                        {% if current_user.is_admin() %}<th>Action</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in holidays %}
+                    <tr>
+                        <td><span class="badge badge-gold">{{ h.date.strftime('%d %b %Y') }}</span></td>
+                        <td class="gold-text">{{ h.name }}</td>
+                        <td>{{ h.description or '-' }}</td>
+                        <td>{{ h.creator.name if h.creator else '-' }}</td>
+                        {% if current_user.is_admin() %}
+                        <td>
+                            <form method="POST" action="{{ url_for('delete_holiday', hid=h.id) }}" onsubmit="return confirm('Delete this holiday?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center text-secondary py-4">No holidays added yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

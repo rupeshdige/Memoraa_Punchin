@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Dashboard • Memoraa{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="brand-font gold-text mb-0">Welcome, {{ current_user.name }}</h2>
+        <p class="text-secondary mb-0">{{ today.strftime('%A, %d %B %Y') }}</p>
+    </div>
+    <a href="{{ url_for('punch') }}" class="btn btn-gold"><i class="bi bi-geo-alt-fill me-1"></i> Go to Punch</a>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card p-3">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="text-secondary small">Today's Status</div>
+                    {% if attendance_today and attendance_today.punch_in_time %}
+                        {% if attendance_today.punch_out_time %}
+                            <h4 class="text-success mb-0">Completed</h4>
+                            <small class="text-secondary">{{ attendance_today.working_hours() }} hrs</small>
+                        {% else %}
+                            <h4 class="text-warning mb-0">Punched In</h4>
+                            <small class="text-secondary">{{ attendance_today.punch_in_time.strftime('%H:%M') }}</small>
+                        {% endif %}
+                    {% else %}
+                        <h4 class="text-danger mb-0">Not Punched</h4>
+                    {% endif %}
+                </div>
+                <i class="bi bi-clock-history fs-1 gold-text opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card p-3">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="text-secondary small">Present Days (This Month)</div>
+                    <h4 class="gold-text mb-0">{{ present_days }}</h4>
+                </div>
+                <i class="bi bi-calendar-check fs-1 gold-text opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card p-3">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="text-secondary small">My Pending Requests</div>
+                    <h4 class="mb-0">{{ pending_regs }}</h4>
+                </div>
+                <i class="bi bi-hourglass-split fs-1 gold-text opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    {% if current_user.is_manager() %}
+    <div class="col-md-3">
+        <div class="card stat-card p-3">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="text-secondary small">Team Approvals Pending</div>
+                    <h4 class="mb-0 {% if team_pending > 0 %}text-warning{% endif %}">{{ team_pending }}</h4>
+                </div>
+                <i class="bi bi-clipboard-check fs-1 gold-text opacity-50"></i>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-lightning me-2"></i>Quick Actions</div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('punch') }}" class="btn btn-outline-gold text-start"><i class="bi bi-geo-alt me-2"></i>Punch In / Out</a>
+                    <a href="{{ url_for('regularize') }}" class="btn btn-outline-gold text-start"><i class="bi bi-pencil-square me-2"></i>Request Regularization</a>
+                    <a href="{{ url_for('salary') }}" class="btn btn-outline-gold text-start"><i class="bi bi-file-earmark-pdf me-2"></i>Download Salary Slip</a>
+                    <a href="{{ url_for('my_requests') }}" class="btn btn-outline-gold text-start"><i class="bi bi-list-check me-2"></i>My Regularization Requests</a>
+                    {% if current_user.is_manager() %}
+                    <a href="{{ url_for('manager_requests') }}" class="btn btn-outline-gold text-start"><i class="bi bi-check2-square me-2"></i>Review Team Requests</a>
+                    {% endif %}
+                    {% if current_user.is_admin() %}
+                    <a href="{{ url_for('employees') }}" class="btn btn-outline-gold text-start"><i class="bi bi-person-plus me-2"></i>Manage Employees</a>
+                    <a href="{{ url_for('add_holiday') }}" class="btn btn-outline-gold text-start"><i class="bi bi-calendar-plus me-2"></i>Add Holiday</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-balloon me-2"></i>Upcoming Holidays</div>
+            <div class="card-body">
+                {% if holidays %}
+                <ul class="list-group list-group-flush">
+                    {% for h in holidays %}
+                    <li class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between">
+                        <span><strong class="gold-text">{{ h.name }}</strong><br><small class="text-secondary">{{ h.description or '' }}</small></span>
+                        <span class="badge badge-gold">{{ h.date.strftime('%d %b %Y') }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-secondary mb-0">No upcoming holidays set.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

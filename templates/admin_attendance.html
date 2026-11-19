@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Team Attendance • Memoraa{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h3 class="brand-font gold-text mb-0"><i class="bi bi-people me-2"></i>Team Attendance</h3>
+    <form method="GET" class="d-flex gap-2">
+        <select name="emp_id" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">All Employees</option>
+            {% for e in employees %}
+            <option value="{{ e.emp_id }}" {% if selected_emp == e.emp_id %}selected{% endif %}>{{ e.name }} ({{ e.emp_id }})</option>
+            {% endfor %}
+        </select>
+        <input type="month" name="month" class="form-control form-control-sm" value="{{ month }}" onchange="this.form.submit()">
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Date</th>
+                        <th>In</th>
+                        <th>Out</th>
+                        <th>Hours</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in records %}
+                    <tr>
+                        <td>{{ a.employee.name }} <small class="text-secondary">({{ a.employee.emp_id }})</small></td>
+                        <td>{{ a.date.strftime('%d %b') }}</td>
+                        <td>{{ a.punch_in_time.strftime('%H:%M') if a.punch_in_time else '-' }}</td>
+                        <td>{{ a.punch_out_time.strftime('%H:%M') if a.punch_out_time else '-' }}</td>
+                        <td>{{ a.working_hours() or '-' }}</td>
+                        <td class="small">{% if a.punch_in_lat %}{{ '%.3f'|format(a.punch_in_lat) }}, {{ '%.3f'|format(a.punch_in_lng) }}{% else %}-{% endif %}</td>
+                        <td>
+                            {% if a.status == 'regularized' %}<span class="badge bg-info">Reg</span>
+                            {% elif a.is_present() %}<span class="badge bg-success">Present</span>
+                            {% else %}<span class="badge bg-warning text-dark">Inc</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="7" class="text-center text-secondary py-4">No records found.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

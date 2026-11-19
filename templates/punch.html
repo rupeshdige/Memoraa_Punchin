@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Punch In/Out • Memoraa{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header text-center">
+                <i class="bi bi-geo-alt-fill me-2"></i>Punch In / Punch Out
+            </div>
+            <div class="card-body text-center py-5">
+                <h5 class="mb-1">{{ today.strftime('%A, %d %B %Y') }}</h5>
+                <p class="text-secondary mb-4" id="liveClock">--:--:--</p>
+
+                <div class="d-flex justify-content-center gap-5 flex-wrap mb-4">
+                    <!-- Punch In -->
+                    <form method="POST" id="punchInForm">
+                        <input type="hidden" name="action" value="punch_in">
+                        <input type="hidden" name="lat" id="lat_in">
+                        <input type="hidden" name="lng" id="lng_in">
+                        <button type="button" class="punch-btn punch-in" id="btnPunchIn"
+                            {% if attendance and attendance.punch_in_time %}disabled{% endif %}
+                            onclick="getLocationAndSubmit('in')">
+                            <i class="bi bi-box-arrow-in-right fs-2 mb-2"></i>
+                            PUNCH IN
+                            {% if attendance and attendance.punch_in_time %}
+                            <small class="mt-1">{{ attendance.punch_in_time.strftime('%H:%M') }}</small>
+                            {% endif %}
+                        </button>
+                    </form>
+
+                    <!-- Punch Out -->
+                    <form method="POST" id="punchOutForm">
+                        <input type="hidden" name="action" value="punch_out">
+                        <input type="hidden" name="lat" id="lat_out">
+                        <input type="hidden" name="lng" id="lng_out">
+                        <button type="button" class="punch-btn punch-out" id="btnPunchOut"
+                            {% if not attendance or not attendance.punch_in_time or attendance.punch_out_time %}disabled{% endif %}
+                            onclick="getLocationAndSubmit('out')">
+                            <i class="bi bi-box-arrow-right fs-2 mb-2"></i>
+                            PUNCH OUT
+                            {% if attendance and attendance.punch_out_time %}
+                            <small class="mt-1">{{ attendance.punch_out_time.strftime('%H:%M') }}</small>
+                            {% endif %}
+                        </button>
+                    </form>
+                </div>
+
+                <div id="locationStatus" class="mb-3 text-secondary small">
+                    <i class="bi bi-geo me-1"></i> Location will be captured when you punch
+                </div>
+
+                {% if attendance %}
+                <div class="card bg-dark border-secondary mt-4">
+                    <div class="card-body">
+                        <h6 class="gold-text">Today's Record</h6>
+                        <div class="row text-start">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Punch In:</strong> 
+                                    {% if attendance.punch_in_time %}
+                                        {{ attendance.punch_in_time.strftime('%H:%M:%S') }}
+                                        {% if attendance.punch_in_lat %}
+                                        <span class="location-badge ms-1">
+                                            <i class="bi bi-geo-alt"></i> {{ '%.4f'|format(attendance.punch_in_lat) }}, {{ '%.4f'|format(attendance.punch_in_lng) }}
+                                        </span>
+                                        {% endif %}
+                                    {% else %}-{% endif %}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Punch Out:</strong> 
+                                    {% if attendance.punch_out_time %}
+                                        {{ attendance.punch_out_time.strftime('%H:%M:%S') }}
+                                        {% if attendance.punch_out_lat %}
+                                        <span class="location-badge ms-1">
+                                            <i class="bi bi-geo-alt"></i> {{ '%.4f'|format(attendance.punch_out_lat) }}, {{ '%.4f'|format(attendance.punch_out_lng) }}
+                                        </span>
+                                        {% endif %}
+                                    {% else %}-{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% if attendance.working_hours() > 0 %}
+                        <p class="mb-0 mt-2"><strong>Working Hours:</strong> <span class="gold-text">{{ attendance.working_hours() }} hrs</span></p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateClock() {
+    const now = new Date();
+    document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-IN', {hour12: false});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+function getLocationAndSubmit(type) {
+    const status = document.getElementById('locationStatus');
+    status.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Getting your location...';
+    
+    if (!navigator.geolocation) {
+        status.innerHTML = '<i class="bi bi-exclamation-triangle me-1 text-warning"></i> Geolocation not supported. Punching without location.';
+        submitForm(type, null, null);
+        return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            status.innerHTML = `<i class="bi bi-check-circle me-1 text-success"></i> Location captured: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            submitForm(type, lat, lng);
+        },
+        function(error) {
+            status.innerHTML = `<i class="bi bi-exclamation-triangle me-1 text-warning"></i> Location error: ${error.message}. Punching without location.`;
+            submitForm(type, null, null);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+}
+
+function submitForm(type, lat, lng) {
+    if (type === 'in') {
+        document.getElementById('lat_in').value = lat || '';
+        document.getElementById('lng_in').value = lng || '';
+        document.getElementById('punchInForm').submit();
+    } else {
+        document.getElementById('lat_out').value = lat || '';
+        document.getElementById('lng_out').value = lng || '';
+        document.getElementById('punchOutForm').submit();
+    }
+}
+</script>
+{% endblock %}

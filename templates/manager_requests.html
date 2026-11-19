@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Team Approvals • Memoraa{% endblock %}
+{% block content %}
+<h3 class="brand-font gold-text mb-4"><i class="bi bi-clipboard-check me-2"></i>Pending Regularization Requests</h3>
+
+{% if requests %}
+<div class="row g-4">
+    {% for r in requests %}
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between">
+                <span>{{ r.employee.name }} ({{ r.employee.emp_id }})</span>
+                <span class="badge badge-pending">Pending</span>
+            </div>
+            <div class="card-body">
+                <p><strong>Date:</strong> {{ r.date.strftime('%d %b %Y') }}</p>
+                <p><strong>Requested In:</strong> {{ r.requested_punch_in.strftime('%H:%M') if r.requested_punch_in else '-' }} 
+                   &nbsp;|&nbsp; <strong>Out:</strong> {{ r.requested_punch_out.strftime('%H:%M') if r.requested_punch_out else '-' }}</p>
+                <p><strong>Reason:</strong> {{ r.reason }}</p>
+                <p class="small text-secondary">Submitted: {{ r.created_at.strftime('%d %b %Y %H:%M') }}</p>
+                
+                <form method="POST" action="{{ url_for('review_request', req_id=r.id, action='approve') }}" class="d-inline">
+                    <input type="text" name="comment" class="form-control form-control-sm mb-2" placeholder="Optional comment">
+                    <button type="submit" class="btn btn-success btn-sm me-2"><i class="bi bi-check-lg"></i> Approve</button>
+                </form>
+                <form method="POST" action="{{ url_for('review_request', req_id=r.id, action='reject') }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-x-lg"></i> Reject</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body text-center text-secondary py-5">
+        <i class="bi bi-check-circle fs-1 mb-3 d-block"></i>
+        No pending requests. All caught up!
+    </div>
+</div>
+{% endif %}
+{% endblock %}
