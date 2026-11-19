@@ -1,8 +1,9 @@
-
 import os
 
 class Config:
-    # PostgreSQL connection from Vercel Environment Variables
+    # ======================
+    # Database Configuration
+    # ======================
     DATABASE_URL = os.environ.get("DATABASE_URL")
 
     if not DATABASE_URL:
@@ -11,34 +12,31 @@ class Config:
             "Please configure it in Vercel Environment Variables."
         )
 
-    # SQLAlchemy PostgreSQL driver
+    # Convert to SQLAlchemy + psycopg3 format
     if DATABASE_URL.startswith("postgres://"):
-        DATABASE_URL = DATABASE_URL.replace(
-            "postgres://",
-            "postgresql+psycopg://",
-            1
-        )
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
     elif DATABASE_URL.startswith("postgresql://"):
-        DATABASE_URL = DATABASE_URL.replace(
-            "postgresql://",
-            "postgresql+psycopg://",
-            1
-        )
+        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
     SQLALCHEMY_DATABASE_URI = DATABASE_URL
 
-    # Database connection settings
+    # Recommended settings for serverless (Vercel)
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
         "pool_recycle": 300,
+        "pool_size": 5,
+        "max_overflow": 10,
         "connect_args": {
-            "connect_timeout": 10
+            "connect_timeout": 10,
+            "options": "-c timezone=Asia/Kolkata"
         }
     }
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Flask security
+    # ======================
+    # Security
+    # ======================
     SECRET_KEY = os.environ.get("SECRET_KEY")
 
     if not SECRET_KEY:
@@ -46,3 +44,16 @@ class Config:
             "SECRET_KEY is missing. "
             "Please configure it in Vercel Environment Variables."
         )
+
+    # ======================
+    # Session & Cookie Settings
+    # ======================
+    SESSION_COOKIE_SECURE = True          # Only send cookie over HTTPS
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    PERMANENT_SESSION_LIFETIME = 60 * 60 * 24 * 7   # 7 days
+
+    # ======================
+    # Other Flask Settings
+    # ======================
+    TEMPLATES_AUTO_RELOAD = True
