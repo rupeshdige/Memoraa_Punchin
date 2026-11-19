@@ -1,14 +1,48 @@
-import os
-from datetime import timedelta
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+import os
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'memoraa-photography-secret-key-2026-ajay'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///' + os.path.join(basedir, 'memoraa.db')
+    # PostgreSQL connection from Vercel Environment Variables
+    DATABASE_URL = os.environ.get("DATABASE_URL")
+
+    if not DATABASE_URL:
+        raise RuntimeError(
+            "DATABASE_URL is missing. "
+            "Please configure it in Vercel Environment Variables."
+        )
+
+    # SQLAlchemy PostgreSQL driver
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace(
+            "postgres://",
+            "postgresql+psycopg://",
+            1
+        )
+    elif DATABASE_URL.startswith("postgresql://"):
+        DATABASE_URL = DATABASE_URL.replace(
+            "postgresql://",
+            "postgresql+psycopg://",
+            1
+        )
+
+    SQLALCHEMY_DATABASE_URI = DATABASE_URL
+
+    # Database connection settings
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+        "connect_args": {
+            "connect_timeout": 10
+        }
+    }
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    PERMANENT_SESSION_LIFETIME = timedelta(days=7)
-    # Company info
-    COMPANY_NAME = "Memoraa"
-    COMPANY_TAGLINE = "Capturing Moments, Creating Memories"
-    COMPANY_THEME = "Photography Studio"
+
+    # Flask security
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+
+    if not SECRET_KEY:
+        raise RuntimeError(
+            "SECRET_KEY is missing. "
+            "Please configure it in Vercel Environment Variables."
+        )
